@@ -10,12 +10,28 @@ function applyTheme(isDark: boolean) {
 }
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // The inline init script in <head> already applies the persisted (or
+  // OS-preferred) theme before this component ever renders on the client,
+  // so reading the DOM here keeps the client render in sync with it.
+  const [isDark, setIsDark] = useState(
+    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark")
+  );
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-    setMounted(true);
+    // If the user hasn't made an explicit choice yet, keep following the
+    // OS preference while the app is open.
+    if (window.localStorage.getItem(THEME_STORAGE_KEY)) {
+      return;
+    }
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDark(event.matches);
+      document.documentElement.classList.toggle("dark", event.matches);
+    };
+
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
   }, []);
 
   const toggleTheme = () => {
@@ -24,22 +40,19 @@ export function ThemeToggle() {
     applyTheme(next);
   };
 
-  const label = mounted
-    ? isDark
-      ? "Switch to light theme"
-      : "Switch to dark theme"
-    : "Toggle theme";
+  const label = isDark ? "Switch to light theme" : "Switch to dark theme";
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
       aria-label={label}
-      aria-pressed={mounted ? isDark : undefined}
+      aria-pressed={isDark}
       title={label}
       className="btn-icon"
+      suppressHydrationWarning
     >
-      {mounted && isDark ? (
+      {isDark ? (
         <Sun className="h-5 w-5" aria-hidden="true" />
       ) : (
         <Moon className="h-5 w-5" aria-hidden="true" />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import { Camera } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/theme/ThemeToggle";
+import { ThemeToggle } from "@/components/ui/theme";
 import { themeInitScript } from "@/components/ui/theme/theme-constants";
 import "./globals.css";
 
