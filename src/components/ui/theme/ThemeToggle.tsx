@@ -26,6 +26,10 @@ export function ThemeToggle() {
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (event: MediaQueryListEvent) => {
+      // Ignore OS changes once the user has made an explicit choice.
+      if (window.localStorage.getItem(THEME_STORAGE_KEY)) {
+        return;
+      }
       setIsDark(event.matches);
       document.documentElement.classList.toggle("dark", event.matches);
     };
