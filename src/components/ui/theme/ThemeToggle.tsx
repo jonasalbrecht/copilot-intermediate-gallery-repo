@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { THEME_STORAGE_KEY } from "./theme-constants";
+import { THEME_STORAGE_KEY } from "./theme-init";
 
 function applyTheme(isDark: boolean) {
   document.documentElement.classList.toggle("dark", isDark);
@@ -10,9 +10,12 @@ function applyTheme(isDark: boolean) {
 }
 
 export function ThemeToggle() {
-  // The inline init script in <head> already applies the persisted (or
-  // OS-preferred) theme before this component ever renders on the client,
-  // so reading the DOM here keeps the client render in sync with it.
+  // The inline init script in <head> runs before hydration and already
+  // applies the persisted (or OS-preferred) theme to <html>. Reading the
+  // DOM here (rather than defaulting to `false` and syncing in an effect)
+  // avoids a visible icon flash on load. This intentionally differs from
+  // the server-rendered markup when the resolved theme is dark, which is
+  // why the button below is marked `suppressHydrationWarning`.
   const [isDark, setIsDark] = useState(
     () => typeof document !== "undefined" && document.documentElement.classList.contains("dark")
   );
